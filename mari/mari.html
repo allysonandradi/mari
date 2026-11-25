@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --warm-gold: #d4a853;
+      --soft-gold: #e8c97a;
+      --warm-cream: #fdf6e8;
+      --deep-warm: #2a1f14;
+      --soft-brown: #8b6f47;
+      --blush: #e8c4b8;
+      --rose-muted: #c9958a;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: linear-gradient(180deg, #1a1410 0%, #2a1f14 10%, #1f1812 50%, #2a1f14 90%, #1a1410 100%);
+      color: var(--warm-cream);
+      overflow-x: hidden;
+      font-family: Georgia, 'Times New Roman', serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Tipografia com fallbacks seguros ── */
+    .font-serif { font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; }
+    .font-body { font-family: 'Lora', Georgia, 'Times New Roman', serif; }
+
+    /* ── Particles ── */
+    .particle {
+      position:fixed; width:3px; height:3px;
+      background:var(--warm-gold); border-radius:50%;
+      opacity:0; pointer-events:none;
+      animation:floatP 8s ease-in-out infinite;
+      will-change:transform,opacity;
+    }
+    @keyframes floatP {
+      0%,100% { opacity:0; transform:translateY(0) scale(.5); }
+      50% { opacity:.25; transform:translateY(-60px) scale(1); }
+    }
+
+    /* ── Music button ── */
+    .music-btn {
+      position:fixed; bottom:20px; left:20px; z-index:60;
+      width:48px; height:48px; border-radius:50%;
+      background:rgba(42,31,20,0.9);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(212,168,83,0.35);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .3s ease;
+      text-decoration:none;
+      animation:mPulse 3s ease-in-out infinite;
+    }
+    .music-btn:active {
+      transform:scale(0.92);
+    }
+    @media(hover:hover) {
+      .music-btn:hover {
+        transform:scale(1.1);
+        border-color:var(--warm-gold);
+        box-shadow:0 0 24px rgba(212,168,83,.3);
+      }
+    }
+    @keyframes mPulse {
+      0%,100% { box-shadow:0 0 0 0 rgba(212,168,83,0); }
+      50% { box-shadow:0 0 0 8px rgba(212,168,83,.08); }
+    }
+    .music-btn svg { width:20px; height:20px; fill:var(--warm-gold); }
+    .music-tooltip {
+      position:absolute; bottom:56px; left:50%; transform:translateX(-50%);
+      background:rgba(42,31,20,0.95); color:var(--warm-cream);
+      font-size:11px; padding:6px 12px; border-radius:8px;
+      white-space:nowrap; opacity:0; pointer-events:none;
+      transition:opacity .3s ease; font-style:italic;
+      border:1px solid rgba(212,168,83,.15);
+    }
+    .music-btn.show-tip .music-tooltip { opacity:1; }
+
+    /* ── Title animations ── */
+    .title-reveal {
+      opacity:0; transform:translateY(30px);
+      animation:tReveal 1.5s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    @keyframes tReveal { to { opacity:1; transform:translateY(0); } }
+
+    .title-line { height:1px; background:linear-gradient(90deg,transparent,var(--warm-gold),transparent); }
+    .title-line-anim { width:0; animation:lineExp 2s cubic-bezier(.22,1,.36,1) .5s forwards; }
+    @keyframes lineExp { to { width:min(200px, 60vw); } }
+
+    /* ── Scroll-reveal ── */
+    .photo-section {
+      opacity:0; transform:translateY(50px);
+      transition:all 1s cubic-bezier(.22,1,.36,1);
+    }
+    .photo-section.visible { opacity:1; transform:translateY(0); }
+
+    .caption-text {
+      opacity:0; transform:translateY(16px);
+      transition:all .7s cubic-bezier(.22,1,.36,1);
+    }
+    .photo-section.visible .caption-text { opacity:1; transform:translateY(0); }
+    .photo-section.visible .caption-text:nth-child(2) { transition-delay:.15s; }
+    .photo-section.visible .caption-text:nth-child(3) { transition-delay:.3s; }
+    .photo-section.visible .caption-text:nth-child(4) { transition-delay:.45s; }
+    .photo-section.visible .caption-text:nth-child(5) { transition-delay:.6s; }
+    .photo-section.visible .caption-text:nth-child(6) { transition-delay:.75s; }
+    .photo-section.visible .caption-text:nth-child(7) { transition-delay:.9s; }
+
+    /* ── Photo frames ── */
+    .photo-frame {
+      position:relative; overflow:hidden; border-radius:14px;
+    }
+    .photo-frame::before {
+      content:''; position:absolute; inset:-2px;
+      background:linear-gradient(135deg,var(--warm-gold) 0%,transparent 40%,transparent 60%,var(--soft-gold) 100%);
+      border-radius:16px; z-index:0; opacity:0; transition:opacity .8s ease;
+    }
+    @media(hover:hover) {
+      .photo-frame:hover::before { opacity:1; }
+      .photo-frame:hover img { transform:scale(1.03); }
+    }
+    .photo-frame img {
+      position:relative; z-index:1;
+      width:100%; height:100%; object-fit:cover; border-radius:14px;
+      transition:transform 1s cubic-bezier(.22,1,.36,1);
+    }
+
+    .golden-light::after {
+      content:''; position:absolute; inset:0; z-index:2;
+      background:linear-gradient(135deg,rgba(212,168,83,.1) 0%,transparent 50%,rgba(232,201,122,.05) 100%);
+      border-radius:14px; pointer-events:none; mix-blend-mode:soft-light;
+    }
+
+    .glow-pulse { animation:glowP 4s ease-in-out infinite; }
+    @keyframes glowP {
+      0%,100% { box-shadow:0 0 20px rgba(212,168,83,0); }
+      50% { box-shadow:0 0 30px rgba(212,168,83,.12); }
+    }
+
+    /* ── Photo labels — sempre visíveis em mobile ── */
+    .photo-label {
+      position:absolute; bottom:10px; left:10px; right:10px; z-index:3;
+      background:rgba(26,20,16,.75);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      color:var(--warm-cream); font-size:11px; font-style:italic;
+      padding:6px 12px; border-radius:20px;
+      border:1px solid rgba(212,168,83,.2);
+      text-align:center;
+      transition:all .5s ease;
+    }
+    /* Em desktop: esconder e mostrar no hover */
+    @media(hover:hover) {
+      .photo-label { opacity:0; transform:translateY(6px); right:auto; }
+      .photo-frame:hover .photo-label { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Grids — responsivos ── */
+    .g2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    .gf { display:grid; grid-template-columns:1.2fr .8fr; gap:10px; }
+    .gfr { display:grid; grid-template-columns:.8fr 1.2fr; gap:10px; }
+
+    @media(max-width:480px) {
+      .g3 { grid-template-columns:1fr 1fr; }
+      .g3 > :last-child { grid-column:1 / -1; }
+      .gf, .gfr { grid-template-columns:1fr; }
+    }
+
+    /* ── Alturas de fotos responsivas ── */
+    .h-hero { height:clamp(380px, 75vw, 580px); }
+    .h-mid { height:clamp(320px, 65vw, 520px); }
+    .h-grid { height:clamp(160px, 30vw, 260px); }
+    .h-pair { height:clamp(280px, 55vw, 420px); }
+    .h-feat { height:clamp(340px, 65vw, 480px); }
+
+    /* ── Decorators ── */
+    .golden-dot { width:6px; height:6px; background:var(--warm-gold); border-radius:50%; display:inline-block; opacity:.6; }
+    .section-divider {
+      display:flex; align-items:center; justify-content:center; gap:16px;
+      padding:36px 0;
+      opacity:0; transition:opacity 1s ease .3s;
+    }
+    .section-divider.visible { opacity:1; }
+    .divider-line { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--warm-gold),transparent); }
+
+    .quote-mark {
+      font-family:Georgia,serif; font-size:56px; line-height:0;
+      color:var(--warm-gold); opacity:.25; position:absolute; top:16px; left:-2px;
+    }
+
+    .section-counter {
+      font-family:Georgia,serif; font-size:clamp(48px,12vw,72px); font-weight:300;
+      color:var(--warm-gold); opacity:.06; position:absolute; top:-16px; right:4px;
+      line-height:1; pointer-events:none;
+    }
+
+    /* ── Scroll progress ── */
+    .scroll-progress {
+      position:fixed; top:0; left:0; height:2px;
+      background:linear-gradient(90deg,var(--warm-gold),var(--soft-gold));
+      z-index:100; width:0;
+    }
+
+    /* ── Nav dots — ocultos em mobile ── */
+    .nav-dots {
+      position:fixed; right:16px; top:50%; transform:translateY(-50%);
+      display:none; flex-direction:column; gap:10px; z-index:50;
+    }
+    @media(min-width:768px) {
+      .nav-dots { display:flex; }
+    }
+    .nav-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:rgba(212,168,83,.2); border:1px solid rgba(212,168,83,.3);
+      cursor:pointer; transition:all .4s ease; position:relative;
+    }
+    .nav-dot.active { background:var(--warm-gold); transform:scale(1.3); border-color:var(--warm-gold); }
+    .nav-dot-label {
+      position:absolute; right:18px; top:50%; transform:translateY(-50%);
+      background:rgba(42,31,20,.92); color:var(--warm-cream); font-size:11px;
+      padding:4px 10px; border-radius:6px; white-space:nowrap;
+      opacity:0; pointer-events:none; transition:opacity .3s ease;
+    }
+    @media(hover:hover) {
+      .nav-dot:hover .nav-dot-label { opacity:1; }
+    }
+
+    /* ── Closing ── */
+    .closing-message {
+      opacity:0; transform:translateY(40px);
+      transition:all 1.5s cubic-bezier(.22,1,.36,1);
+    }
+    .closing-message.visible { opacity:1; transform:translateY(0); }
+
+    /* ── Intro ── */
+    .intro-overlay {
+      position:fixed; inset:0; background:#1a1410; z-index:200;
+      display:flex; align-items:center; justify-content:center; flex-direction:column;
+      transition:opacity 1.2s ease;
+      padding:24px;
+    }
+    .intro-overlay.fade-out { opacity:0; pointer-events:none; }
+    .intro-text {
+      font-family:Georgia,serif; font-size:clamp(17px,4.5vw,21px); font-weight:300;
+      font-style:italic; color:var(--warm-cream); text-align:center;
+      padding:0 16px; opacity:0; animation:iFade 2.5s ease-in-out .5s forwards;
+      line-height:1.6;
+    }
+    .intro-sub {
+      font-family:Georgia,serif; font-size:11px; color:var(--soft-brown);
+      margin-top:20px; opacity:0; letter-spacing:2px;
+      animation:iFade 2s ease-in-out 2.2s forwards;
+    }
+    @keyframes iFade {
+      0% { opacity:0; transform:translateY(10px); }
+      40% { opacity:1; transform:translateY(0); }
+      100% { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Scroll suave ── */
+    html { scroll-behavior:smooth; }
+
+    /* ── Ajustes gerais mobile ── */
+    @media(max-width:480px) {
+      .quote-mark { font-size:44px; top:12px; left:0; }
+      .section-divider { padding:28px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div id="particles" style="position:fixed;inset:0;pointer-events:none;z-index:1;"></div>
+  <div class="nav-dots" id="navDots"></div>
+
+  <!-- ♫ Music Button -->
+  <div class="music-btn" id="musicBtn" role="button" tabindex="0" aria-label="Tocar música">
+    <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    <span class="music-tooltip">♫ Toque a música ai branquinha</span>
+  </div>
+
+  <!-- ═══ INTRO ═══ -->
+  <div class="intro-overlay" id="introOverlay">
+    <p class="intro-text">"Às vezes, são os pequenos detalhes<br>que tornam alguém tão especial."</p>
+    <p class="intro-sub">▼ ROLE PARA BAIXO ▼</p>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div style="position:relative;z-index:2;">
+
+    <!-- ═══ HEADER ═══ -->
+    <section id="sec-0" class="flex flex-col items-center justify-center px-5" style="min-height:70vh;padding-top:100px;padding-bottom:60px;">
+      <div class="title-reveal" style="animation-delay:.2s;">
+        <p class="font-body text-xs tracking-widest uppercase text-center" style="color:var(--soft-brown);letter-spacing:3px;">Uma seção especial para você</p>
+      </div>
+      <h1 class="font-serif text-center title-reveal" style="font-size:clamp(26px,6vw,48px);font-weight:300;line-height:1.25;margin-top:20px;animation-delay:.5s;color:var(--warm-cream);">
+        Detalhes que talvez você<br>nem perceba, <span style="color:var(--warm-gold);font-style:italic;">Mari</span>...
+      </h1>
+      <div class="title-line title-line-anim" style="margin-top:28px;"></div>
+      <p class="font-body title-reveal text-center" style="margin-top:28px;max-width:460px;font-size:clamp(13px,3.5vw,15px);line-height:1.8;color:var(--rose-muted);animation-delay:1s;font-style:italic;">
+        Existem coisas sobre você que talvez passem despercebidas no espelho, mas não passam despercebidas por mim.
+      </p>
+    </section>
+
+
+    <!-- ═══ 01 · SEU CABELO ═══ -->
+    <section id="sec-1" class="photo-section px-5" style="max-width:640px;margin:0 auto;padding-bottom:20px;position:relative;">
+      <span class="section-counter">01</span>
+      <div class="caption-text" style="margin-bottom:20px;">
+        <p class="font-body text-xs tracking-widest uppercase" style="color:var(--soft-brown);letter-spacing:3px;">Sobre o seu cabelo lindao</p>
+      </div>
+
+      <div class="photo-frame golden-light glow-pulse caption-text h-hero" style="margin-bottom:10px;">
+        <img src="img/mari_cabelo_sol_dourado.jpg" alt="Cabelo ao sol com reflexos dourados">
+        <div class="photo-label">Castanho à sombra, dourado ao sol ✦</div>
+      </div>
+
+      <div class="photo-frame golden-light caption-text h-mid" style="margin-bottom:10px;">
+        <img src="img/mari_cavalgada.jpg" alt="Mariana na fazenda ao sol">
+        <div class="photo-label">Quando o sol resolve iluminar você</div>
+      </div>
+
+      <div class="g3 caption-text" style="margin-bottom:24px;">
+        <div class="photo-frame golden-light h-grid">
+          <img src="img/mari_cabelo_cavalo.jpg" alt="Cabelo longo com cavalo">
+        </div>
+        <div class="photo-frame golden-light h-grid">
+          <img src="img/mari_rotina1.jpg" alt="Na rotina com cavalos">
+        </div>
+        <div class="photo-frame golden-light h-grid">
+           <img src="img/mari_fazenda_sol.jpg" alt="Na rotina com cavalos">
+        </div>
+      </div>
+
+      <div class="caption-text" style="position:relative;padding:20px 16px;margin-bottom:12px;">
+        <span class="quote-mark">"</span>
+        <p class="font-serif" style="font-size:clamp(18px,4.5vw,22px);line-height:1.6;font-style:italic;color:var(--warm-cream);padding-left:18px;">
+          Seu cabelo tem uma magia própria: castanho à sombra, dourado quando o sol resolve iluminar você.
+        </p>
+      </div>
+      <p class="font-body caption-text" style="font-size:clamp(13px,3.2vw,14px);line-height:1.8;color:var(--rose-muted);padding:0 6px;">
+        Longo, bonito, natural. Daqueles que a gente repara sem querer — e continua reparando. No sol, parece que ganha vida própria, com reflexos que nenhum filtro conseguiria inventar.
+      </p>
+    </section>
+
+    <div class="section-divider"><div class="divider-line"></div><div class="golden-dot"></div><div class="divider-line"></div></div>
+
+
+    <!-- ═══ 02 · SEU OLHAR ═══ -->
+    <section id="sec-2" class="photo-section px-5" style="max-width:640px;margin:0 auto;padding-bottom:20px;position:relative;">
+      <span class="section-counter">02</span>
+      <div class="caption-text" style="margin-bottom:20px;">
+        <p class="font-body text-xs tracking-widest uppercase" style="color:var(--soft-brown);letter-spacing:3px;">Sobre o seu olhar lindo puxadin</p>
+      </div>
+
+      <div class="photo-frame glow-pulse caption-text h-hero" style="margin-bottom:10px;">
+        <img src="img/mari_selfie_carro.jpg" alt="Close-up do olhar da Mariana">
+        <div class="photo-label">Pra mim seus Olhos são daqueles que dizem mais do que palavras</div>
+      </div>
+
+      <div class="g2 caption-text" style="margin-bottom:10px;">
+        <div class="photo-frame h-pair">
+          <img src="img/mari_noite.jpg" alt="Olhar à noite">
+          <div class="photo-label">De noite, ainda mais marcante</div>
+        </div>
+        <div class="photo-frame h-pair">
+          <img src="img/mari_olhar.jpg" alt="Olhar carinhoso para o cavalo">
+          <div class="photo-label">O jeito que você olha pra quem ama</div>
+        </div>
+      </div>
+
+      <div class="caption-text" style="position:relative;padding:20px 16px;margin-bottom:12px;">
+        <span class="quote-mark">"</span>
+        <p class="font-serif" style="font-size:clamp(18px,4.5vw,22px);line-height:1.6;font-style:italic;color:var(--warm-cream);padding-left:18px;">
+          Seu olhar tem um daqueles detalhes que a gente não esquece facilmente.
+        </p>
+      </div>
+      <p class="font-body caption-text" style="font-size:clamp(13px,3.2vw,14px);line-height:1.8;color:var(--rose-muted);padding:0 6px;">
+        Tem algo nos seus olhos que é difícil de explicar. Talvez seja a intensidade, talvez a sinceridade. Ou talvez seja simplesmente porque são seus. De dia ou de noite, olhando pra câmera ou pra um cavalo — esse olhar chama atenção do mesmo jeito.
+       E eu sei que quando eu tiver a oportunidade de encará-los, me encantarei também.</p>
+    </section>
+
+    <div class="section-divider"><div class="divider-line"></div><div class="golden-dot"></div><div class="divider-line"></div></div>
+
+
+    <!-- ═══ 03 · SEU ROSTINHO ═══ -->
+    <section id="sec-3" class="photo-section px-5" style="max-width:640px;margin:0 auto;padding-bottom:20px;position:relative;">
+      <span class="section-counter">03</span>
+      <div class="caption-text" style="margin-bottom:20px;">
+        <p class="font-body text-xs tracking-widest uppercase" style="color:var(--soft-brown);letter-spacing:3px;">Sobre o seu rostinho lindo </p>
+      </div>
+
+      <div class="gf caption-text" style="margin-bottom:10px;">
+        <div class="photo-frame glow-pulse h-feat">
+          <img src="img/mari_chapeu.jpg" alt="Mariana com chapéu">
+          <div class="photo-label">Beleza que não precisa de ensaio</div>
+        </div>
+        <div class="photo-frame h-feat">
+          <img src="img/mari_vestido_delicado.jpg" alt="Mariana elegante">
+          <div class="photo-label">Delicadeza natural ✦</div>
+        </div>
+      </div>
+
+      <div class="photo-frame caption-text h-feat" style="margin-bottom:24px;">
+        <img src="img/mari_rostin.jpg" alt="Mariana no laboratório">
+        <div class="photo-label">Bonita de todas formas</div>
+      </div>
+
+      <div class="caption-text" style="position:relative;padding:20px 16px;margin-bottom:12px;">
+        <span class="quote-mark">"</span>
+        <p class="font-serif" style="font-size:clamp(18px,4.5vw,22px);line-height:1.6;font-style:italic;color:var(--warm-cream);padding-left:18px;">
+          Eu poderia passar um tempão falando da sua beleza, mas acho que ainda não encontrei palavras suficientes.
+        </p>
+      </div>
+      <p class="font-body caption-text" style="font-size:clamp(13px,3.2vw,14px);line-height:1.8;color:var(--rose-muted);padding:0 6px;">
+        Seu rosto tem uma beleza natural que não precisa de nada além de ser exatamente como é. Com chapéu, de jaleco, arrumada ou no dia a dia — seu rostinho é bonito do mesmo jeito, sem ensaio e sem retoque.
+      </p>
+    </section>
+
+    <div class="section-divider"><div class="divider-line"></div><div class="golden-dot"></div><div class="divider-line"></div></div>
+
+
+    <!-- ═══ 04 · SEUS LÁBIOS E SORRISO ═══ -->
+    <section id="sec-4" class="photo-section px-5" style="max-width:640px;margin:0 auto;padding-bottom:20px;position:relative;">
+      <span class="section-counter">04</span>
+      <div class="caption-text" style="margin-bottom:20px;">
+        <p class="font-body text-xs tracking-widest uppercase" style="color:var(--soft-brown);letter-spacing:3px;">Sobre o seu sorriso simples perfeito</p>
+      </div>
+
+      <div class="photo-frame glow-pulse caption-text h-hero" style="margin-bottom:10px;">
+        <img src="img/mari_vestido_elegante.jpg" alt="Mariana elegante, lábios e sorriso marcantes">
+        <div class="photo-label">Esse sorriso de canto que eu sei que vai me dar vontade de ver de novo ✦</div>
+      </div>
+
+      <div class="g2 caption-text" style="margin-bottom:24px;">
+        <div class="photo-frame h-pair">
+          <img src="img/mari_natureza.jpg" alt="Sorriso na natureza">
+          <div class="photo-label">Lindo com ou sem batom</div>
+        </div>
+        <div class="photo-frame golden-light h-pair">
+          <img src="img/mari_silhueta.jpg" alt="Silhueta contra a luz">
+          <div class="photo-label">Contra a luz, linda igual</div>
+        </div>
+      </div>
+
+      <div class="caption-text" style="position:relative;padding:20px 16px;margin-bottom:12px;">
+        <span class="quote-mark">"</span>
+        <p class="font-serif" style="font-size:clamp(18px,4.5vw,22px);line-height:1.6;font-style:italic;color:var(--warm-cream);padding-left:18px;">
+          Seu sorriso é daqueles que dão vontade de ver mais uma vez.
+        </p>
+      </div>
+      <p class="font-body caption-text" style="font-size:clamp(13px,3.2vw,14px);line-height:1.8;color:var(--rose-muted);padding:0 6px;">
+        Seus lábios, o jeito como você sorri — são detalhes que deixam qualquer momento mais bonito. Um sorriso sincero, que ilumina sem precisar de holofote nenhum. Com batom vermelho ou no natural — esse sorriso é sempre o mesmo: lindo.
+      </p>
+    </section>
+
+    <div class="section-divider"><div class="divider-line"></div><div class="golden-dot"></div><div class="divider-line"></div></div>
+
+
+    <!-- ═══ 05 · ELA POR INTEIRO ═══ -->
+    <section id="sec-5" class="photo-section px-5" style="max-width:640px;margin:0 auto;padding-bottom:20px;position:relative;">
+      <span class="section-counter">05</span>
+      <div class="caption-text" style="margin-bottom:20px;">
+        <p class="font-body text-xs tracking-widest uppercase" style="color:var(--soft-brown);letter-spacing:3px;">E tem mais uma coisa...</p>
+      </div>
+
+      <div class="photo-frame golden-light glow-pulse caption-text h-hero" style="margin-bottom:10px;">
+        <img src="img/mari_carinho_cavalo.jpg" alt="Mariana cavalgando ao pôr do sol">
+        <div class="photo-label">Livre, linda e no lugar que ama ✦</div>
+      </div>
+
+      <div class="g3 caption-text" style="margin-bottom:10px;">
+        <div class="photo-frame h-grid">
+          <img src="img/mari_medicamento1.jpg" alt="Preparando medicamento">
+          <div class="photo-label">Atenta a cada detalhe</div>
+        </div>
+        <div class="photo-frame h-grid">
+          <img src="img/mari_tratamento.jpg" alt="Tratando ferimento">
+          <div class="photo-label">Mãos que cuidam</div>
+        </div>
+        <div class="photo-frame h-grid">
+          <img src="img/mari_cirurgia.jpg" alt="Em cirurgia">
+          <div class="photo-label">salvando vidas</div>
+        </div>
+      </div>
+
+      <div class="caption-text" style="position:relative;padding:20px 16px;margin-bottom:12px;">
+        <span class="quote-mark">"</span>
+        <p class="font-serif" style="font-size:clamp(18px,4.5vw,22px);line-height:1.6;font-style:italic;color:var(--warm-cream);padding-left:18px;">
+          Bonita por fora, dedicada por dentro. Essa combinação é rara — e é toda sua.
+        </p>
+      </div>
+      <p class="font-body caption-text" style="font-size:clamp(13px,3.2vw,14px);line-height:1.8;color:var(--rose-muted);padding:0 6px;">
+        A beleza que mais impressiona é aquela que aparece quando você nem está tentando. Num plantão, cuidando de um animal, preparando medicação, tratando um ferimento com toda a delicadeza. Ou cavalgando livre ao pôr do sol, no lugar que você mais ama. Isso, Mari, é bonito de um jeito que nenhuma foto consegue capturar por completo.
+      </p>
+    </section>
+
+
+    <!-- ═══ CLOSING ═══ -->
+    <section id="sec-6" class="closing-message flex flex-col items-center justify-center px-5" style="padding-top:60px;padding-bottom:120px;">
+      <div class="title-line" style="width:min(120px,40vw);margin-bottom:36px;"></div>
+
+      <p class="font-serif text-center" style="font-size:clamp(20px,5vw,36px);font-weight:300;line-height:1.5;color:var(--warm-cream);max-width:460px;font-style:italic;">
+        "Às vezes, são os pequenos detalhes que tornam alguém tão especial."
+      </p>
+
+      <div style="margin-top:36px;display:flex;align-items:center;gap:12px;">
+        <div class="divider-line" style="width:40px;"></div>
+        <div class="golden-dot"></div>
+        <div class="divider-line" style="width:40px;"></div>
+      </div>
+
+      <p class="font-body text-center" style="margin-top:28px;font-size:clamp(13px,3.2vw,14px);color:var(--rose-muted);max-width:400px;line-height:1.8;">
+        Essa seção existe porque alguém repara em você. Nos detalhes que talvez você nem perceba, mas que fazem de você exatamente quem você é.
+      </p>
+
+      <p class="font-body text-center" style="margin-top:16px;font-size:clamp(12px,3vw,13px);color:var(--soft-brown);max-width:380px;line-height:1.7;font-style:italic;">
+        O cabelo que brilha no sol. O olhar que fica na memória. O rostinho que não precisa de filtro. O sorriso que dá vontade de ver de novo. E a dedicação que torna tudo isso ainda mais bonito.
+      </p>
+
+      <p class="font-serif text-center" style="margin-top:40px;font-size:clamp(15px,3.8vw,17px);color:var(--warm-gold);font-style:italic;opacity:.8;">
+        Com carinho, de quem admira cada detalhe seu Allyson Andradi lindo✦
+      </p>
+    </section>
+
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ── Intro overlay ──
+      var introTimer = setTimeout(function() {
+        var overlay = document.getElementById('introOverlay');
+        if (overlay) {
+          overlay.classList.add('fade-out');
+          setTimeout(function() { overlay.style.display = 'none'; }, 1200);
+        }
+      }, 3800);
+
+      // Allow tap/click to dismiss intro early
+      var overlay = document.getElementById('introOverlay');
+      if (overlay) {
+        overlay.addEventListener('click', function() {
+          clearTimeout(introTimer);
+          overlay.classList.add('fade-out');
+          setTimeout(function() { overlay.style.display = 'none'; }, 600);
+        });
+      }
+
+      // ── Particles (fewer on mobile) ──
+      var isMobile = window.innerWidth < 768;
+      var particleCount = isMobile ? 10 : 20;
+      var pc = document.getElementById('particles');
+      for (var i = 0; i < particleCount; i++) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 8 + 's';
+        p.style.animationDuration = (6 + Math.random() * 4) + 's';
+        pc.appendChild(p);
+      }
+
+      // ── Scroll progress ──
+      var bar = document.getElementById('scrollProgress');
+      var ticking = false;
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          requestAnimationFrame(function() {
+            var max = document.documentElement.scrollHeight - window.innerHeight;
+            if (max > 0) {
+              bar.style.width = (window.scrollY / max * 100) + '%';
+            }
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+
+      // ── Music button ──
+      var musicBtn = document.getElementById('musicBtn');
+      var musicUrl = 'https://youtu.be/3JiMr-HgHJ8?si=DarDg2-SJ6_thxNm';
+
+      // Show tooltip briefly on load
+      setTimeout(function() {
+        musicBtn.classList.add('show-tip');
+        setTimeout(function() { musicBtn.classList.remove('show-tip'); }, 3000);
+      }, 5000);
+
+      musicBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        try {
+          window.open(musicUrl, '_blank', 'noopener,noreferrer');
+        } catch(err) {
+          // Fallback: copy URL or show it
+          musicBtn.classList.add('show-tip');
+          var tip = musicBtn.querySelector('.music-tooltip');
+          if (tip) tip.textContent = 'Abra: ' + musicUrl;
+        }
+      });
+
+      musicBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          musicBtn.click();
+        }
+      });
+
+      // ── Nav dots ──
+      var nd = document.getElementById('navDots');
+      var ids = ['sec-0','sec-1','sec-2','sec-3','sec-4','sec-5','sec-6'];
+      var labels = ['Início','Cabelo','Olhar','Rostinho','Sorriso','Dedicação','Final'];
+      ids.forEach(function(id, i) {
+        var d = document.createElement('div');
+        d.className = 'nav-dot';
+        d.setAttribute('role', 'button');
+        d.setAttribute('aria-label', labels[i]);
+        d.innerHTML = '<span class="nav-dot-label">' + labels[i] + '</span>';
+        d.addEventListener('click', function() {
+          var el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        });
+        nd.appendChild(d);
+      });
+      var dots = nd.querySelectorAll('.nav-dot');
+
+      // ── Intersection Observers ──
+      // Reveal observer
+      if ('IntersectionObserver' in window) {
+        var revealObs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+        document.querySelectorAll('.photo-section, .section-divider, .closing-message').forEach(function(el) {
+          revealObs.observe(el);
+        });
+
+        // Dot highlight observer
+        var dotObs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              dots.forEach(function(d) { d.classList.remove('active'); });
+              var idx = ids.indexOf(entry.target.id);
+              if (idx >= 0 && dots[idx]) dots[idx].classList.add('active');
+            }
+          });
+        }, { threshold: 0.2 });
+
+        ids.forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) dotObs.observe(el);
+        });
+      } else {
+        // Fallback: show everything immediately
+        document.querySelectorAll('.photo-section, .section-divider, .closing-message').forEach(function(el) {
+          el.classList.add('visible');
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
